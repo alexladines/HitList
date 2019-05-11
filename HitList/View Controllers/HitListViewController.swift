@@ -26,7 +26,7 @@ class HitListViewController: UIViewController {
                     return
             }
             
-            self.save(name: nameToSave)
+            self.saveToCoreData(name: nameToSave)
             self.hitListTableView.reloadData()
         }
         
@@ -48,6 +48,10 @@ class HitListViewController: UIViewController {
         hitListTableView.dataSource = self
         title = "The List"
         hitListTableView.register(UITableViewCell.self, forCellReuseIdentifier: "HitCell")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        self.loadFromCoreData()
     }
     
     // MARK: - Navigation
@@ -72,7 +76,7 @@ extension HitListViewController: UITableViewDataSource {
 }
 // MARK: - Core Data
 extension HitListViewController {
-    func save(name: String) {
+    func saveToCoreData(name: String) {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
             return
         }
@@ -94,6 +98,26 @@ extension HitListViewController {
         }
         catch let error as NSError {
             print("Could not save. \(error), \(error.userInfo)")
+        }
+    }
+    
+    func loadFromCoreData() {
+        // 1.
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            return
+        }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        
+        // 2.
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Person")
+        
+        // 3.
+        do {
+            people = try managedContext.fetch(fetchRequest)
+        }
+        catch let error as NSError {
+            print("Could not fetch. \(error), \(error.userInfo)")
         }
     }
 }
